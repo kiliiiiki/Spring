@@ -7,6 +7,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.yedam.board.domain.BoardVO;
+import com.yedam.board.domain.Criteria;
 import com.yedam.board.persistence.MapperTest;
 
 import lombok.Setter;
@@ -19,6 +20,14 @@ public class ServiceTest {
 	
 	@Setter(onMethod_ = @Autowired)
 	private BoardService service;
+	
+	@Test
+	public void listTest() {
+		Criteria cri = new Criteria(1, 30); //5페이지 5건씩
+		cri.setType("TCW");
+		cri.setKeyword("user03");
+		service.getList(cri).forEach(board -> log.info(board));
+	}
 
 	//@Test
 	public void registerTest() {
@@ -32,7 +41,7 @@ public class ServiceTest {
 		log.info("등록후: " + board);
 	}
 	
-	@Test
+	//@Test
 	public void getTest() {
 		service.get(1L);
 	}
