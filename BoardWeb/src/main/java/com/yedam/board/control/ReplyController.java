@@ -1,7 +1,5 @@
 package com.yedam.board.control;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.yedam.board.domain.Criteria;
+import com.yedam.board.domain.ReplyPageDTO;
 import com.yedam.board.domain.ReplyVO;
 import com.yedam.board.service.ReplyService;
 
@@ -45,8 +44,9 @@ public class ReplyController {
 	public ResponseEntity getList(@PathVariable("bno") Long bno, @PathVariable("page") int page) {
 		//pageNum=3, amount=10
 		Criteria cri = new Criteria(page, 10);
-		List<ReplyVO> list = replyService.getList(bno, cri);
-		return new ResponseEntity<>(list, HttpStatus.OK);
+		//List<ReplyVO> list = replyService.getList(bno, cri);
+		ReplyPageDTO dto = replyService.getListPage(cri, bno);
+		return new ResponseEntity<>(dto, HttpStatus.OK);
 	}
 	
 	@GetMapping(value="/{rno}")

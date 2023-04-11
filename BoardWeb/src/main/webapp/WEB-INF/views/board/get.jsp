@@ -72,6 +72,10 @@
 					</li>
 				</ul>
 			</div>
+			<div class = "panel-footer">
+				<!-- 페이지 정보 -->
+				
+			</div>
 		</div>
 	</div>
 </div>
@@ -139,16 +143,23 @@
 						var bnoValue = "${board.bno }";
 						var replyUl = $('.chat');
 
-						showList("1");
+						showList("-1"); //마지막 페이지 보여주기
+						
 						function showList(page) {
 
 							replyService
 									.getList(
 											{
 												bno : bnoValue,
-												page : page
+												page : page || 1
 											},
-											function(list) {
+											function(replyCnt, list) {
+												//전체 페이지의 끝부분 계산
+												if(page == -1){
+													pageNum = Math.ceil(replyCnt / 10.0); //15건 -> 2페이지
+													showList(pageNum);
+													return; //페이지의 값을 -1로 지정하면 마지막 페이지를 보여줌
+												}
 												if (list == null
 														|| list.length == 0) {
 													replyUl.html("");
@@ -170,6 +181,9 @@
 															+ "</p></div></li>";
 												}
 												replyUl.html(str);
+												
+												//페이지 정보
+												showReplyPage(replyCnt);
 
 											}, function(result) {
 												console.log(result);
@@ -209,6 +223,8 @@
 							alert('result: ' + result);
 							modal.find('input').val('');
 							modal.modal('hide'); //화면에서 숨김
+							
+							showList(-1); //마지막 페이지로 이동
 						})
 						})
 						
@@ -218,7 +234,7 @@
 							replyService.get(rno, function(reply){
 								modalInputReply.val(reply.reply);
 								modalInputReplyer.val(reply.replyer);
-								modalInputReplyDate.val(replyService.displayTime(reply));
+								modalInputReplyDate.val(replyService.displayTime(reply.replydate));
 								modal.data('rno', reply.rno); //<li data-rno=32>
 								
 								modal.find('button[id!="modalCloseBtn"]').hide();
@@ -247,8 +263,48 @@
 								alert(result);
 								modal.modal('hide');
 								
-								showList("1");
+								showList(pageNum);
 							})
+						})
+						
+						//페이징 정보
+						var pageNum = 1;
+						var replyPageFooter=$('.panel-footer');
+						function showReplyPage(replyCnt){
+							var endNum = Math.ceil(pageNum / 10.0) * 10; //23건 -> 3페이지가 마지막
+							var startNum = endNum - 9;
+							var prev = startNum != 1;
+							var next = false;
+							
+							if(endNum * 10 > replyCnt){
+								endNum = Math.ceil(replyCnt / 10.0);// 실제 마지막 페이지
+							}
+							if(endNum * 10 < replyCnt){
+								next = true;
+							}
+							var str = "<ul class='pagination pull-right'>";
+							if(prev){
+								str += "<li class='page-item'><a class='page-link' href='"+(startNum-1)+"'>Previous</a></li>";
+							}
+							for(var i = startNum; i<=endNum; i++){
+								var active = pageNum == i ? 'active' : '';
+								str += "<li class='page-item "+active+"'><a class='page-link' href='"+i+"'>"+i+"</a></li>";
+							}
+							if(next){
+								str += "<li class='page-item'><a class='page-link' href='"+(endNum+1)+"'>Next</a></li>";
+							}
+							str += "</ul>";
+							replyPageFooter.html(str);
+							
+						}
+						
+						//페이지 번호 링크 연결
+						replyPageFooter.on('click', 'li a', function(e){
+							e.preventDefault();
+							var targetPageNum = $(this).attr('href');
+							pageNum = targetPageNum;
+							
+							showList(pageNum);
 						})
 
 					});
